@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -10,6 +8,10 @@
   --sidebar: #f7fafc;
   --border: #e2e8f0;
   --muted-text: #718096;
+  --editor-bg: #ffffff;
+  --editor-text: #1a1a1a;
+  --editor-accent: #3b82f6;
+  --editor-code-bg: #f3f4f6;
 }
 
 [data-theme='dark'] {
@@ -20,6 +22,10 @@
   --sidebar: #2d3748;
   --border: #4a5568;
   --muted-text: #a0aec0;
+  --editor-bg: #1e1e1e;
+  --editor-text: #d4d4d4;
+  --editor-accent: #60a5fa;
+  --editor-code-bg: #2d2d2d;
 }
 
 [data-theme='dracula'] {
@@ -30,6 +36,10 @@
   --sidebar: #1e1f29;
   --border: #44475a;
   --muted-text: #6272a4;
+  --editor-bg: #282a36;
+  --editor-text: #f8f8f2;
+  --editor-accent: #ff79c6;
+  --editor-code-bg: #44475a;
 }
 
 * {

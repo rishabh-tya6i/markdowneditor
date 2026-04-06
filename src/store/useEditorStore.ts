@@ -1,60 +1,56 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-export interface Theme {
-  name: string;
-  id: string;
-}
-
-export interface Widget {
-  id: string;
-  name: string;
-  position: "left" | "right" | "bottom";
-  isEnabled: boolean;
-}
-
-export interface EditorState {
+interface EditorStore {
   content: string;
   filePath: string | null;
-  theme: string;
-  layout: "split" | "editor" | "preview";
-  widgets: Widget[];
+  fileName: string | null;
   isDirty: boolean;
+  lastSaved: Date | null;
+  layoutMode: 'split' | 'editor' | 'preview';
+  splitRatio: number;
   
+  // Actions
   setContent: (content: string) => void;
-  setFilePath: (path: string | null) => void;
-  setTheme: (theme: string) => void;
-  setLayout: (layout: "split" | "editor" | "preview") => void;
-  toggleWidget: (id: string) => void;
-  setDirty: (isDirty: boolean) => void;
+  setFilePath: (path: string | null, name: string | null) => void;
+  setIsDirty: (dirty: boolean) => void;
+  setLastSaved: (date: Date) => void;
+  setLayoutMode: (mode: 'split' | 'editor' | 'preview') => void;
+  setSplitRatio: (ratio: number) => void;
+  reset: () => void;
 }
 
-const getSavedTheme = () => {
-  return localStorage.getItem('theme') || 'light';
-};
-
-export const useEditorStore = create<EditorState>((set) => ({
-  content: '# Hello Markdown\n\nWrite something amazing...',
-  filePath: null,
-  theme: getSavedTheme(),
-  layout: 'split',
-  isDirty: false,
-  widgets: [
-    { id: 'toc', name: 'Table of Contents', position: 'left', isEnabled: true },
-    { id: 'wordCount', name: 'Word Count', position: 'bottom', isEnabled: true },
-  ],
-  
-  setContent: (content) => set({ content, isDirty: true }),
-  setFilePath: (filePath) => set({ filePath, isDirty: false }),
-  setTheme: (theme) => {
-    localStorage.setItem('theme', theme);
-    set({ theme });
-    document.documentElement.setAttribute('data-theme', theme);
-  },
-  setLayout: (layout) => set({ layout }),
-  toggleWidget: (id) => set((state) => ({
-    widgets: state.widgets.map((w) => 
-      w.id === id ? { ...w, isEnabled: !w.isEnabled } : w
-    )
-  })),
-  setDirty: (isDirty) => set({ isDirty }),
-}));
+export const useEditorStore = create<EditorStore>()(
+  persist(
+    (set) => ({
+      content: '# Welcome to Markdown Editor\n\nStart typing...',
+      filePath: null,
+      fileName: null,
+      isDirty: false,
+      lastSaved: null,
+      layoutMode: 'split',
+      splitRatio: 50,
+      
+      setContent: (content) => set({ content, isDirty: true }),
+      setFilePath: (path, name) => set({ filePath: path, fileName: name }),
+      setIsDirty: (dirty) => set({ isDirty: dirty }),
+      setLastSaved: (date) => set({ lastSaved: date, isDirty: false }),
+      setLayoutMode: (mode) => set({ layoutMode: mode }),
+      setSplitRatio: (ratio) => set({ splitRatio: ratio }),
+      reset: () => set({
+        content: '',
+        filePath: null,
+        fileName: null,
+        isDirty: false,
+        lastSaved: null,
+      }),
+    }),
+    {
+      name: 'editor-storage',
+      partialize: (state) => ({
+        layoutMode: state.layoutMode,
+        splitRatio: state.splitRatio,
+      }),
+    }
+  )
+);

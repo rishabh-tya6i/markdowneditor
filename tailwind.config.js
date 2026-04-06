@@ -14,6 +14,11 @@ export default {
         sidebar: 'var(--sidebar)',
         border: 'var(--border)',
         'muted-text': 'var(--muted-text)',
+        editor: {
+          bg: 'var(--editor-bg)',
+          text: 'var(--editor-text)',
+          accent: 'var(--editor-accent)',
+        }
       },
     },
   },

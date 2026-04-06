@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, FileText, Monitor, Columns, Sun, Moon, Ghost, Settings, Save, FolderOpen, Download, Clock } from 'lucide-react';
+import { Layout, FileText, Monitor, Columns, Settings, Save, FolderOpen, Download, Clock } from 'lucide-react';
 import { useEditorStore } from '../store/useEditorStore';
+import { useWidgetStore } from '../store/useWidgetStore';
+import { ThemeSwitcher } from '../components/ThemeSwitcher/ThemeSwitcher';
+import { StorageService, type RecentFile } from '../services/storageService';
 import { openFile, saveFile, saveFileAs, exportToHTML } from '../services/fileService';
-import { getRecentFiles } from '../services/recentFiles';
 
 const Header: React.FC = () => {
-  const { layout, setLayout, theme, setTheme, toggleWidget, widgets, content, filePath, isDirty } = useEditorStore();
-  const [recentFiles, setRecentFiles] = useState<string[]>([]);
+  const { layoutMode, setLayoutMode, content, filePath, isDirty } = useEditorStore();
+  const { widgets, toggleWidget } = useWidgetStore();
+  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
 
   useEffect(() => {
-    setRecentFiles(getRecentFiles());
-  }, [filePath]);
+    const fetchRecent = async () => {
+      const files = await StorageService.getRecentFiles();
+      setRecentFiles(files);
+    };
+    fetchRecent();
+  }, [filePath, isDirty]);
 
   const handleSave = async () => {
     if (filePath) {
@@ -20,9 +27,11 @@ const Header: React.FC = () => {
     }
   };
 
-  const handleOpenRecent = async (path: string) => {
-    // This is a simplified version, in a real app we'd trigger the open service with a path
-    console.log('Open recent:', path);
+  const handleOpenRecent = async (file: RecentFile) => {
+    // We would need a dedicated openRecent in fileService, but for now 
+    // let's assume we can trigger a reload with the path.
+    // In a real app, this would call readTextFile(file.path) and set content.
+    console.log('Open recent:', file.path);
   };
 
   return (
@@ -54,7 +63,7 @@ const Header: React.FC = () => {
                     onClick={() => handleOpenRecent(file)}
                     className="w-full text-left px-2 py-1.5 hover:bg-background rounded-md text-xs truncate text-muted-text hover:text-text"
                   >
-                    {file.split('/').pop()}
+                    {file.name}
                   </button>
                 ))}
               </div>
@@ -88,20 +97,20 @@ const Header: React.FC = () => {
       <div className="flex items-center space-x-6">
         <div className="flex bg-background rounded-lg p-1 border border-border">
           <button
-            onClick={() => setLayout('editor')}
-            className={`p-1.5 rounded-md transition-all ${layout === 'editor' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
+            onClick={() => setLayoutMode('editor')}
+            className={`p-1.5 rounded-md transition-all ${layoutMode === 'editor' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
           >
             <Columns className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setLayout('split')}
-            className={`p-1.5 rounded-md transition-all ${layout === 'split' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
+            onClick={() => setLayoutMode('split')}
+            className={`p-1.5 rounded-md transition-all ${layoutMode === 'split' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
           >
             <Layout className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setLayout('preview')}
-            className={`p-1.5 rounded-md transition-all ${layout === 'preview' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
+            onClick={() => setLayoutMode('preview')}
+            className={`p-1.5 rounded-md transition-all ${layoutMode === 'preview' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
           >
             <Monitor className="w-4 h-4" />
           </button>
@@ -109,21 +118,7 @@ const Header: React.FC = () => {
 
         <div className="h-6 w-[1px] bg-border mx-2" />
 
-        <div className="flex items-center space-x-1">
-          {[
-            { id: 'light', icon: Sun },
-            { id: 'dark', icon: Moon },
-            { id: 'dracula', icon: Ghost }
-          ].map(({ id, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setTheme(id)}
-              className={`p-1.5 rounded-full transition-all ${theme === id ? 'bg-accent text-white shadow-md' : 'text-muted-text hover:text-text hover:bg-background'}`}
-            >
-              <Icon className="w-4 h-4" />
-            </button>
-          ))}
-        </div>
+        <ThemeSwitcher />
 
         <div className="h-6 w-[1px] bg-border mx-2" />
 
@@ -135,13 +130,13 @@ const Header: React.FC = () => {
             <div className="text-[10px] font-bold px-2 py-1 text-muted-text uppercase tracking-widest mb-1">Widgets</div>
             {widgets.map((widget) => (
               <label key={widget.id} className="flex items-center px-2 py-1.5 hover:bg-background rounded-md cursor-pointer group/item">
-                <div className={`w-3 h-3 rounded-sm border mr-2 flex items-center justify-center transition-all ${widget.isEnabled ? 'bg-accent border-accent' : 'border-muted-text'}`}>
-                  {widget.isEnabled && <div className="w-1 h-1 bg-white rounded-full" />}
+                <div className={`w-3 h-3 rounded-sm border mr-2 flex items-center justify-center transition-all ${widget.enabled ? 'bg-accent border-accent' : 'border-muted-text'}`}>
+                  {widget.enabled && <div className="w-1 h-1 bg-white rounded-full" />}
                 </div>
                 <input
                   type="checkbox"
                   className="hidden"
-                  checked={widget.isEnabled}
+                  checked={widget.enabled}
                   onChange={() => toggleWidget(widget.id)}
                 />
                 <span className="text-xs transition-colors group-hover/item:text-accent">{widget.name}</span>

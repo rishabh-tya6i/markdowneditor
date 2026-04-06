@@ -1,7 +1,7 @@
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
 import { useEditorStore } from '../store/useEditorStore';
-import { addRecentFile } from './recentFiles';
+import { StorageService } from './storageService';
 
 export const openFile = async () => {
   try {
@@ -15,9 +15,11 @@ export const openFile = async () => {
 
     if (selected && typeof selected === 'string') {
       const content = await readTextFile(selected);
+      const name = selected.split('/').pop() || 'Untitled';
       useEditorStore.getState().setContent(content);
-      useEditorStore.getState().setFilePath(selected);
-      addRecentFile(selected);
+      useEditorStore.getState().setFilePath(selected, name);
+      useEditorStore.getState().setIsDirty(false);
+      await StorageService.addRecentFile(selected, name);
     }
   } catch (error) {
     console.error('Failed to open file:', error);
@@ -35,8 +37,10 @@ export const saveFileAs = async (content: string) => {
 
     if (path) {
       await writeTextFile(path, content);
-      useEditorStore.getState().setFilePath(path);
-      addRecentFile(path);
+      const name = path.split('/').pop() || 'Untitled';
+      useEditorStore.getState().setFilePath(path, name);
+      useEditorStore.getState().setLastSaved(new Date());
+      await StorageService.addRecentFile(path, name);
       return path;
     }
   } catch (error) {
@@ -48,7 +52,8 @@ export const saveFileAs = async (content: string) => {
 export const saveFile = async (path: string, content: string) => {
   try {
     await writeTextFile(path, content);
-    useEditorStore.getState().setDirty(false);
+    useEditorStore.getState().setIsDirty(false);
+    useEditorStore.getState().setLastSaved(new Date());
   } catch (error) {
     console.error('Failed to save file:', error);
   }
