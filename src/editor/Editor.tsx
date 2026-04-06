@@ -12,8 +12,16 @@ const Editor = forwardRef<HTMLTextAreaElement>((_, ref) => {
     setContent: state.setContent
   })));
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lineNumbersRef = useRef<HTMLDivElement>(null);
   
   useImperativeHandle(ref, () => textareaRef.current!);
+
+  // Scroll Sync for Line Numbers
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    if (lineNumbersRef.current) {
+      lineNumbersRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
+  };
 
   // Formatting helper
   const insertFormatting = useCallback((before: string, after: string = '') => {
@@ -64,7 +72,7 @@ const Editor = forwardRef<HTMLTextAreaElement>((_, ref) => {
       <EditorToolbar onFormat={insertFormatting} />
       
       <div className="flex flex-1 overflow-hidden relative">
-        <LineNumbers count={lineCount} />
+        <LineNumbers ref={lineNumbersRef} count={lineCount} />
         
         <textarea
           ref={textareaRef}
@@ -72,6 +80,7 @@ const Editor = forwardRef<HTMLTextAreaElement>((_, ref) => {
           value={content}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onScroll={handleScroll}
           placeholder="Start writing..."
           spellCheck={false}
           data-testid="editor-textarea"

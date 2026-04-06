@@ -45,6 +45,7 @@ const Preview = forwardRef<HTMLDivElement>((_, ref) => {
     <div 
       ref={ref} 
       className="preview-container flex-1 h-full overflow-y-auto p-8 scroll-smooth"
+      data-testid="preview-container"
       style={{ 
         backgroundColor: 'var(--editor-bg)',
         color: 'var(--editor-text)'

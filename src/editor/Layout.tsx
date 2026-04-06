@@ -6,6 +6,8 @@ import Editor from './Editor';
 import Preview from './Preview';
 import { WidgetManager } from '../widgets/WidgetManager';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { useScrollSync } from '../hooks/useScrollSync';
+import { TabBar } from './TabBar';
 
 const Layout: React.FC = () => {
   const { layoutMode, filePath, isDirty } = useEditorStore(useShallow((state) => ({
@@ -18,20 +20,7 @@ const Layout: React.FC = () => {
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Scroll Synchronization
-  useEffect(() => {
-    const editor = editorRef.current;
-    const preview = previewRef.current;
-
-    if (!editor || !preview || layoutMode !== 'split') return;
-
-    const handleScroll = () => {
-      const ratio = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
-      preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
-    };
-
-    editor.addEventListener('scroll', handleScroll);
-    return () => editor.removeEventListener('scroll', handleScroll);
-  }, [layoutMode]);
+  useScrollSync(editorRef, previewRef, layoutMode === 'split');
 
   // Unsaved Changes Protection
   useEffect(() => {
@@ -62,6 +51,7 @@ const Layout: React.FC = () => {
   return (
     <div className="flex flex-col h-screen h-svh bg-background text-text overflow-hidden">
       <Header />
+      <TabBar />
       
       <main className="flex-1 flex overflow-hidden">
         <WidgetManager position="left" />
@@ -74,7 +64,7 @@ const Layout: React.FC = () => {
           )}
           
           {(layoutMode === 'preview' || layoutMode === 'split') && (
-            <div className={`flex-1 h-full overflow-y-auto ${layoutMode === 'split' ? 'border-l border-border' : 'max-w-4xl mx-auto py-8'}`}>
+            <div className={`flex-1 h-full ${layoutMode === 'split' ? 'border-l border-border' : 'max-w-4xl mx-auto py-8'}`}>
               <Preview ref={previewRef} />
             </div>
           )}

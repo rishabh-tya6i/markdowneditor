@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, FileText, Monitor, Columns, Settings, Save, FolderOpen, Download, Clock } from 'lucide-react';
+import { Layout, FileText, Monitor, Columns, Settings, Save, FolderOpen, Download, Clock, Printer, FilePlus } from 'lucide-react';
 import { useEditorStore } from '../store/useEditorStore';
 import { useWidgetStore } from '../store/useWidgetStore';
 import { ThemeSwitcher } from '../components/ThemeSwitcher/ThemeSwitcher';
 import { StorageService, type RecentFile } from '../services/storageService';
-import { openFile, saveFile, saveFileAs, exportToHTML } from '../services/fileService';
+import { openFile, saveFile, saveFileAs, exportToHTML, printToPDF, newFile } from '../services/fileService';
 
 const Header: React.FC = () => {
   const { layoutMode, setLayoutMode, content, filePath, isDirty } = useEditorStore();
@@ -35,7 +35,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="h-14 border-b border-border bg-sidebar flex items-center justify-between px-6 select-none relative z-[100]">
+    <header className="h-14 border-b border-border bg-sidebar flex items-center justify-between px-6 select-none relative z-[100] no-print">
       <div className="flex items-center space-x-2">
         <div className="flex items-center space-x-2 mr-6 group cursor-default">
           <FileText className="w-5 h-5 text-accent" />
@@ -44,16 +44,26 @@ const Header: React.FC = () => {
         </div>
         
         <div className="flex bg-background rounded-lg p-1 border border-border">
+          <button 
+            onClick={newFile}
+            className="p-1.5 rounded-md text-muted-text hover:text-accent hover:bg-accent/10 transition-all flex items-center space-x-1" 
+            title="New File (Cmd+N)"
+            data-testid="new-file-button"
+          >
+            <FilePlus className="w-4 h-4" />
+          </button>
+          
           <div className="relative group">
             <button 
               onClick={openFile}
               className="p-1.5 rounded-md text-muted-text hover:text-accent hover:bg-accent/10 transition-all flex items-center space-x-1" 
               title="Open (Cmd+O)"
+              data-testid="open-button"
             >
               <FolderOpen className="w-4 h-4" />
             </button>
             {recentFiles.length > 0 && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-sidebar border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2">
+              <div className="absolute top-full left-0 mt-2 w-64 bg-sidebar border border-border rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2 backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10">
                 <div className="text-[10px] font-bold px-2 py-1 text-muted-text uppercase tracking-widest mb-1 flex items-center">
                   <Clock className="w-3 h-3 mr-1.5" /> Recent Files
                 </div>
@@ -61,7 +71,8 @@ const Header: React.FC = () => {
                   <button
                     key={i}
                     onClick={() => handleOpenRecent(file)}
-                    className="w-full text-left px-2 py-1.5 hover:bg-background rounded-md text-xs truncate text-muted-text hover:text-text"
+                    className="w-full text-left px-2 py-1.5 hover:bg-accent/10 rounded-md text-xs truncate text-muted-text hover:text-text transition-colors"
+                    data-testid={`recent-file-${i}`}
                   >
                     {file.name}
                   </button>
@@ -74,6 +85,7 @@ const Header: React.FC = () => {
             onClick={handleSave}
             className="p-1.5 rounded-md text-muted-text hover:text-accent hover:bg-accent/10 transition-all" 
             title="Save (Cmd+S)"
+            data-testid="save-button"
           >
             <Save className="w-4 h-4" />
           </button>
@@ -82,8 +94,18 @@ const Header: React.FC = () => {
             onClick={() => exportToHTML(content)}
             className="p-1.5 rounded-md text-muted-text hover:text-accent hover:bg-accent/10 transition-all" 
             title="Export to HTML"
+            data-testid="export-button"
           >
             <Download className="w-4 h-4" />
+          </button>
+
+          <button 
+            onClick={printToPDF}
+            className="p-1.5 rounded-md text-muted-text hover:text-accent hover:bg-accent/10 transition-all" 
+            title="Print / Export to PDF"
+            data-testid="print-button"
+          >
+            <Printer className="w-4 h-4" />
           </button>
         </div>
         
@@ -99,18 +121,21 @@ const Header: React.FC = () => {
           <button
             onClick={() => setLayoutMode('editor')}
             className={`p-1.5 rounded-md transition-all ${layoutMode === 'editor' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
+            data-testid="layout-editor"
           >
             <Columns className="w-4 h-4" />
           </button>
           <button
             onClick={() => setLayoutMode('split')}
             className={`p-1.5 rounded-md transition-all ${layoutMode === 'split' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
+            data-testid="layout-split"
           >
             <Layout className="w-4 h-4" />
           </button>
           <button
             onClick={() => setLayoutMode('preview')}
             className={`p-1.5 rounded-md transition-all ${layoutMode === 'preview' ? 'bg-accent text-white shadow-sm' : 'text-muted-text hover:text-text'}`}
+            data-testid="layout-preview"
           >
             <Monitor className="w-4 h-4" />
           </button>
@@ -126,10 +151,14 @@ const Header: React.FC = () => {
           <button className="p-1.5 rounded-full text-muted-text hover:text-text transition-all hover:bg-background">
             <Settings className="w-4 h-4" />
           </button>
-          <div className="absolute top-full right-0 mt-2 w-48 bg-sidebar border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2">
+          <div className="absolute top-full right-0 mt-2 w-48 bg-sidebar border border-border rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2 backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10">
             <div className="text-[10px] font-bold px-2 py-1 text-muted-text uppercase tracking-widest mb-1">Widgets</div>
             {widgets.map((widget) => (
-              <label key={widget.id} className="flex items-center px-2 py-1.5 hover:bg-background rounded-md cursor-pointer group/item">
+              <label 
+                key={widget.id} 
+                className="flex items-center px-2 py-1.5 hover:bg-accent/10 rounded-md cursor-pointer group/item transition-colors"
+                data-testid={`widget-toggle-${widget.id}`}
+              >
                 <div className={`w-3 h-3 rounded-sm border mr-2 flex items-center justify-center transition-all ${widget.enabled ? 'bg-accent border-accent' : 'border-muted-text'}`}>
                   {widget.enabled && <div className="w-1 h-1 bg-white rounded-full" />}
                 </div>

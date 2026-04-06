@@ -12,6 +12,17 @@
   --editor-text: #1a1a1a;
   --editor-accent: #3b82f6;
   --editor-code-bg: #f3f4f6;
+  --editor-border: #e2e8f0;
+  --editor-selection: rgba(49, 130, 206, 0.2);
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-text: var(--text);
+  --color-accent: var(--accent);
+  --color-sidebar: var(--sidebar);
+  --color-border: var(--border);
+  --color-muted-text: var(--muted-text);
 }
 
 [data-theme='dark'] {
@@ -177,3 +188,50 @@ code {
 [data-theme='light'] .hljs-keyword { color: #d73a49; }
 [data-theme='light'] .hljs-string { color: #032f62; }
 [data-theme='light'] .hljs-comment { color: #6a737d; }
+
+/* Print Styles */
+@media print {
+  header, 
+  aside,
+  .editor-textarea,
+  .editor-toolbar, 
+  .line-numbers,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+  }
+
+  main {
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .preview-container {
+    display: block !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .prose {
+    max-width: none !important;
+    color: black !important;
+  }
+
+  .prose pre, .prose code {
+    background-color: #f6f8fa !important;
+    border: 1px solid #ddd !important;
+    color: black !important;
+  }
+}

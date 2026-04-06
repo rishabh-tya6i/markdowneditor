@@ -18,8 +18,13 @@ export const useWidgetStore = create<WidgetStore>()(
       
       registerWidget: (widget) => {
         set((state) => {
-          const exists = state.widgets.find(w => w.id === widget.id);
-          if (exists) return state;
+          const index = state.widgets.findIndex(w => w.id === widget.id);
+          if (index !== -1) {
+            // Keep persistence but update name and other properties
+            const updated = [...state.widgets];
+            updated[index] = { ...widget, ...updated[index], name: widget.name, position: widget.position };
+            return { widgets: updated };
+          }
           return { widgets: [...state.widgets, widget] };
         });
       },
@@ -51,8 +56,10 @@ export const useWidgetStore = create<WidgetStore>()(
       partialize: (state) => ({
         widgets: state.widgets.map(w => ({
           id: w.id,
+          name: w.name,
           enabled: w.enabled,
           order: w.order,
+          position: w.position,
         })),
       }),
     }

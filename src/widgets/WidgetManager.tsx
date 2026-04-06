@@ -70,18 +70,18 @@ export const WidgetManager: React.FC<{ position: 'left' | 'right' | 'bottom' }> 
   
   if (position === 'bottom') {
     return (
-      <div className="flex items-center overflow-x-auto border-t border-border bg-sidebar/20 divide-x divide-border">
+      <footer className="flex items-center overflow-x-auto border-t border-border bg-sidebar/20 divide-x divide-border no-print">
         {enabledWidgets.map(widget => (
           <React.Fragment key={widget.id}>
             {widget.render(context)}
           </React.Fragment>
         ))}
-      </div>
+      </footer>
     );
   }
 
   return (
-    <div className="w-64 border-l border-border bg-sidebar/10 flex flex-col h-full overflow-y-auto">
+    <aside className={`w-64 border-border bg-sidebar/10 flex flex-col h-full overflow-y-auto no-print ${position === 'left' ? 'border-r' : 'border-l'}`}>
       <div className="p-3 py-4 border-b border-border bg-sidebar/20">
         <h2 className="text-[10px] font-bold text-muted-text uppercase tracking-widest">Panel: {position}</h2>
       </div>
@@ -103,6 +103,6 @@ export const WidgetManager: React.FC<{ position: 'left' | 'right' | 'bottom' }> 
           {widget.render(context)}
         </div>
       ))}
-    </div>
+    </aside>
   );
 };

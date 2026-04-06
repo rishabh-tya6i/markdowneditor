@@ -25,7 +25,7 @@ export const ThemeSwitcher: React.FC = () => {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)} 
           />
-          <div className="absolute right-0 mt-2 w-56 bg-sidebar border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute right-0 mt-2 w-56 bg-sidebar border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl">
             <div className="p-2 space-y-1">
               <div className="px-3 py-1.5 text-[10px] font-bold text-muted-text uppercase tracking-widest">
                 Select Theme
@@ -40,7 +40,7 @@ export const ThemeSwitcher: React.FC = () => {
                   className={`w-full px-3 py-2 text-left rounded-lg transition-all flex items-center justify-between group ${
                     currentTheme.id === theme.id 
                       ? 'bg-accent text-white shadow-sm' 
-                      : 'hover:bg-background text-muted-text hover:text-text'
+                      : 'hover:bg-accent/10 text-muted-text hover:text-text'
                   }`}
                   data-testid={`theme-option-${theme.id}`}
                 >
