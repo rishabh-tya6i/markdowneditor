@@ -8,8 +8,8 @@ import { useEffect, useRef, useCallback } from 'react';
  * @param enabled Whether synchronization is currently active
  */
 export const useScrollSync = (
-  editorRef: React.RefObject<HTMLTextAreaElement>,
-  previewRef: React.RefObject<HTMLDivElement>,
+  editorRef: React.RefObject<HTMLTextAreaElement | null>,
+  previewRef: React.RefObject<HTMLDivElement | null>,
   enabled: boolean = true
 ) => {
   const isSyncing = useRef(false);

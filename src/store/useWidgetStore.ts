@@ -22,7 +22,16 @@ export const useWidgetStore = create<WidgetStore>()(
           if (index !== -1) {
             // Keep persistence but update name and other properties
             const updated = [...state.widgets];
-            updated[index] = { ...widget, ...updated[index], name: widget.name, position: widget.position };
+            const stored = updated[index];
+            updated[index] = { 
+              ...widget, 
+              enabled: stored.enabled, 
+              order: stored.order,
+              // Update from widget definition
+              name: widget.name,
+              position: widget.position,
+              render: widget.render
+            };
             return { widgets: updated };
           }
           return { widgets: [...state.widgets, widget] };
@@ -47,7 +56,7 @@ export const useWidgetStore = create<WidgetStore>()(
       
       getEnabledWidgets: (position) => {
         return get().widgets
-          .filter(w => w.enabled && w.position === position)
+          .filter(w => w.enabled && w.position === position && typeof w.render === 'function')
           .sort((a, b) => a.order - b.order);
       },
     }),

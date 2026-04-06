@@ -10,7 +10,7 @@ export const useAutoSave = (delay: number = 3000) => {
     isDirty: state.isDirty,
     setLastSaved: state.setLastSaved
   })));
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   useEffect(() => {
     if (!isDirty || !filePath) return;
